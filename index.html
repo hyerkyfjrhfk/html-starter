@@ -1,35 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gemini 1.5 Flash Chat</title>
 <style>
-body { font-family: Arial,sans-serif; background:#0f0f0f; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-.chat { width:400px; background:#1c1c1c; border-radius:10px; padding:15px; box-shadow:0 0 20px rgba(0,0,0,0.6); }
-textarea { width:100%; height:80px; resize:none; border-radius:6px; border:none; padding:10px; font-size:14px; }
-button { width:100%; margin-top:10px; padding:10px; font-size:15px; border:none; border-radius:6px; background:#4a90e2; color:white; cursor:pointer; }
-button:hover { background:#357bd8; }
-.response { margin-top:12px; background:#111; padding:10px; border-radius:6px; min-height:60px; white-space:pre-wrap; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.chat-container {
+  width: 400px;
+  height: 600px;
+  background: #1c1c1c;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 8px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background: #4a90e2;
+  color: white;
+  align-self: flex-end;
+}
+
+.message.assistant {
+  background: #333;
+  color: #f1f1f1;
+  align-self: flex-start;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid #444;
+}
+
+#prompt {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  color: white;
+  background: #222;
+}
+
+#prompt:focus {
+  outline: none;
+}
+
+#send {
+  width: 80px;
+  background: #4a90e2;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
 
-<div class="chat">
-  <textarea id="prompt" placeholder="Type something..."></textarea>
-  <button onclick="send()">Send</button>
-  <div class="response" id="output">Response will appear here…</div>
+<div class="chat-container">
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <input type="text" id="prompt" placeholder="Type a message..." autocomplete="off">
+    <button id="send">Send</button>
+  </div>
 </div>
 
 <script>
-const API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4"; // your key
+const API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4";
 const MODEL = "gemini-1.5-flash";
 
-async function send() {
-  const prompt = document.getElementById("prompt").value.trim();
-  const output = document.getElementById("output");
+const messagesDiv = document.getElementById("messages");
+const promptInput = document.getElementById("prompt");
+const sendButton = document.getElementById("send");
 
-  if (!prompt) return;
-  output.textContent = "Thinking...";
+const conversation = [];
+
+// Add message to UI
+function addMessage(role, text) {
+  const div = document.createElement("div");
+  div.className = "message " + role;
+  div.textContent = text;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Send user message
+async function sendMessage() {
+  const text = promptInput.value.trim();
+  if (!text) return;
+
+  // Add user message
+  addMessage("user", text);
+  conversation.push({ role: "user", parts: [{ text }] });
+
+  // Clear input & disable
+  promptInput.value = "";
+  promptInput.disabled = true;
+  sendButton.disabled = true;
+
+  // Show loading
+  const loading = document.createElement("div");
+  loading.className = "message assistant";
+  loading.textContent = "Typing...";
+  messagesDiv.appendChild(loading);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
   try {
     const res = await fetch(
@@ -37,28 +144,40 @@ async function send() {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }]
-        })
+        body: JSON.stringify({ contents: conversation })
       }
     );
 
     const data = await res.json();
+    messagesDiv.removeChild(loading);
 
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
     if (reply) {
-      output.textContent = reply;
+      addMessage("assistant", reply);
+      conversation.push({ role: "model", parts: [{ text: reply }] });
     } else if (data?.error?.message) {
-      output.textContent = "Error: " + data.error.message;
+      addMessage("assistant", "Error: " + data.error.message);
     } else {
-      output.textContent = "No response returned. Check your API key and model.";
+      addMessage("assistant", "No response returned.");
     }
 
   } catch (err) {
-    output.textContent = "Request failed: " + err.message;
+    messagesDiv.removeChild(loading);
+    addMessage("assistant", "Request failed: " + err.message);
+  } finally {
+    promptInput.disabled = false;
+    sendButton.disabled = false;
+    promptInput.focus();
   }
 }
+
+// Event listeners
+sendButton.addEventListener("click", sendMessage);
+promptInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+promptInput.focus();
 </script>
 
 </body>
