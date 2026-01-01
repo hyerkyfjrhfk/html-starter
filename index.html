@@ -2,14 +2,14 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Gemini 1.5 Flash UI</title>
+<title>Gemini 1.5 Flash Chat</title>
 <style>
-  body { font-family: Arial,sans-serif; background:#0f0f0f; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-  .chat { width:400px; background:#1c1c1c; border-radius:10px; padding:15px; box-shadow:0 0 20px rgba(0,0,0,0.6); }
-  textarea { width:100%; height:80px; resize:none; border-radius:6px; border:none; padding:10px; font-size:14px; }
-  button { width:100%; margin-top:10px; padding:10px; font-size:15px; border:none; border-radius:6px; background:#4a90e2; color:white; cursor:pointer; }
-  button:hover { background:#357bd8; }
-  .response { margin-top:12px; background:#111; padding:10px; border-radius:6px; min-height:60px; white-space:pre-wrap; }
+body { font-family: Arial,sans-serif; background:#0f0f0f; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+.chat { width:400px; background:#1c1c1c; border-radius:10px; padding:15px; box-shadow:0 0 20px rgba(0,0,0,0.6); }
+textarea { width:100%; height:80px; resize:none; border-radius:6px; border:none; padding:10px; font-size:14px; }
+button { width:100%; margin-top:10px; padding:10px; font-size:15px; border:none; border-radius:6px; background:#4a90e2; color:white; cursor:pointer; }
+button:hover { background:#357bd8; }
+.response { margin-top:12px; background:#111; padding:10px; border-radius:6px; min-height:60px; white-space:pre-wrap; }
 </style>
 </head>
 <body>
@@ -21,7 +21,7 @@
 </div>
 
 <script>
-const API_KEY = "YOUR_API_KEY_HERE"; // keep local
+const API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4"; // your key
 const MODEL = "gemini-1.5-flash";
 
 async function send() {
@@ -45,7 +45,6 @@ async function send() {
 
     const data = await res.json();
 
-    // SAFELY access the text
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (reply) {
