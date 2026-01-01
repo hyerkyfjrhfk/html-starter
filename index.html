@@ -130,7 +130,11 @@ body {
 </div>
 
 <script>
+/* API KEY (kept as requested) */
 const GEMINI_API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4";
+
+/* FIXED MODEL */
+const GEMINI_MODEL = "gemini-1.5-flash-latest";
 
 const messagesDiv = document.getElementById("messages");
 const input = document.getElementById("messageInput");
@@ -138,7 +142,7 @@ const sendBtn = document.getElementById("sendButton");
 
 const conversationHistory = [];
 
-// Initial assistant message (NOW INCLUDED)
+/* Initial assistant message */
 addMessage("assistant", "Hello! I'm your AI assistant powered by Gemini.");
 conversationHistory.push({
     role: "model",
@@ -171,11 +175,13 @@ async function sendMessage() {
 
     try {
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: conversationHistory })
+                body: JSON.stringify({
+                    contents: conversationHistory
+                })
             }
         );
 
@@ -186,17 +192,21 @@ async function sendMessage() {
             return;
         }
 
-        const reply = data.candidates[0].content.parts[0].text;
-        addMessage("assistant", reply);
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!reply) {
+            addMessage("assistant", "No response returned.");
+            return;
+        }
 
+        addMessage("assistant", reply);
         conversationHistory.push({
             role: "model",
             parts: [{ text: reply }]
         });
 
-    } catch (e) {
+    } catch (err) {
+        console.error(err);
         addMessage("assistant", "Request failed.");
-        console.error(e);
     }
 }
 
