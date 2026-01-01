@@ -130,8 +130,7 @@ body {
 </div>
 
 <script>
-// 🔑 INSERT YOUR KEY HERE
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const GEMINI_API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4";
 
 const messagesDiv = document.getElementById("messages");
 const input = document.getElementById("messageInput");
@@ -139,7 +138,7 @@ const sendBtn = document.getElementById("sendButton");
 
 const conversationHistory = [];
 
-// Initial assistant greeting (NOW INCLUDED IN HISTORY)
+// Initial assistant message (NOW INCLUDED)
 addMessage("assistant", "Hello! I'm your AI assistant powered by Gemini.");
 conversationHistory.push({
     role: "model",
@@ -161,11 +160,6 @@ function addMessage(role, text) {
 async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
-
-    if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-        alert("Insert your Gemini API key first.");
-        return;
-    }
 
     input.value = "";
     addMessage("user", text);
@@ -201,7 +195,7 @@ async function sendMessage() {
         });
 
     } catch (e) {
-        addMessage("assistant", "Network or API error.");
+        addMessage("assistant", "Request failed.");
         console.error(e);
     }
 }
