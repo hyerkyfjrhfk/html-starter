@@ -55,9 +55,6 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .message.user .avatar {
@@ -130,11 +127,11 @@ body {
 </div>
 
 <script>
-/* API KEY (kept as requested) */
+/* API KEY (kept) */
 const GEMINI_API_KEY = "AIzaSyCPXBI8k9TcAay0A2G7D9-JF4JYDw4DzY4";
 
-/* FIXED MODEL */
-const GEMINI_MODEL = "gemini-1.5-flash-latest";
+/* ✅ ONLY VALID MODEL FOR v1beta */
+const GEMINI_MODEL = "gemini-1.0-pro";
 
 const messagesDiv = document.getElementById("messages");
 const input = document.getElementById("messageInput");
@@ -179,9 +176,7 @@ async function sendMessage() {
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: conversationHistory
-                })
+                body: JSON.stringify({ contents: conversationHistory })
             }
         );
 
